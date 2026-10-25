@@ -3,6 +3,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,12 +27,18 @@ jobs:
         env:
           VERSION_CODE: ${{ github.run_number }}
         run: gradle assembleDebug --no-daemon --stacktrace
+      - name: Stage APK
+        run: |
+          APK=$(find app/build/outputs/apk/debug -name "*.apk" | head -1)
+          cp "$APK" "SMS-Link-r${{ github.run_number }}.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SMS-Link-r${{ github.run_number }}
+          path: SMS-Link-r${{ github.run_number }}.apk
       - name: Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          APK=$(find app/build/outputs/apk/debug -name "*.apk" | head -1)
-          cp "$APK" "SMS-Link-r${{ github.run_number }}.apk"
           gh release create "r${{ github.run_number }}" "SMS-Link-r${{ github.run_number }}.apk" \
             --target "$GITHUB_SHA" --title "SMS Link r${{ github.run_number }}" \
             --notes "$(git log -1 --format=%B | grep -v -E '^(Co-Authored-By|Claude-Session):')"
