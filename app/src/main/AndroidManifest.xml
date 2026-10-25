@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Used only by MainActivity, to show this phone's own IP addresses.
-         The listening socket runs inside com.android.phone, under that process's permissions. -->
+    <!-- WiFi path -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Sender: read incoming SMS to forward -->
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <!-- Bluetooth path -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Receiver's Bluetooth server runs in a foreground service -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
 
     <application
         android:allowBackup="false"
@@ -13,7 +22,7 @@
 
         <meta-data android:name="xposedmodule" android:value="true" />
         <meta-data android:name="xposeddescription"
-            android:value="Injects SMS forwarded from your other phone (the one with the SIM) so apps on this phone auto-read OTP codes." />
+            android:value="Links two phones: forwards the SIM phone's SMS/OTP codes to a SIM-less phone and injects them so apps auto-read. One app, pick Sender or Receiver." />
         <meta-data android:name="xposedminversion" android:value="82" />
         <meta-data android:name="xposedscope" android:resource="@array/xposed_scope" />
 
@@ -25,5 +34,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".RelayService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
+
+        <receiver
+            android:name=".SmsReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter android:priority="999">
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

@@ -9,7 +9,7 @@ android {
         targetSdk = 35
         // CI passes the run number so every build installs over the previous one.
         versionCode = (System.getenv("VERSION_CODE") ?: "1").toInt()
-        versionName = "0.2"
+        versionName = "0.3"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

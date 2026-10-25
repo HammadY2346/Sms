@@ -25,7 +25,7 @@ public final class Lg {
 
     /** Debug builds only: start writing to <phone data dir>/files/smslink.log. */
     static void setup(Context ctx) {
-        if (!BuildConfig.DEBUG) return;
+        if (!BuildConfig.DEBUG || file != null) return;
         try {
             file = new File(ctx.getFilesDir(), "smslink.log");
             append("---- log opened (v" + BuildConfig.VERSION_NAME + ") ----");
