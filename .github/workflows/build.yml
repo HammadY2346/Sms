@@ -23,22 +23,22 @@ jobs:
           gradle-version: '8.7'
       - name: Install SDK
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
-      - name: Build (debug-signed so it installs; signing doesn't matter for an Xposed module)
+      - name: Build normal + debug
         env:
           VERSION_CODE: ${{ github.run_number }}
-        run: gradle assembleDebug --no-daemon --stacktrace
-      - name: Stage APK
+        run: gradle assembleRelease assembleDebug --no-daemon --stacktrace
+      - name: Stage APKs
         run: |
-          APK=$(find app/build/outputs/apk/debug -name "*.apk" | head -1)
-          cp "$APK" "SMS-Link-r${{ github.run_number }}.apk"
+          cp "$(find app/build/outputs/apk/release -name '*.apk' | head -1)" "SMS-Link-r${{ github.run_number }}.apk"
+          cp "$(find app/build/outputs/apk/debug -name '*.apk' | head -1)" "SMS-Link-r${{ github.run_number }}-debug.apk"
       - uses: actions/upload-artifact@v4
         with:
           name: SMS-Link-r${{ github.run_number }}
-          path: SMS-Link-r${{ github.run_number }}.apk
+          path: SMS-Link-r${{ github.run_number }}*.apk
       - name: Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "r${{ github.run_number }}" "SMS-Link-r${{ github.run_number }}.apk" \
+          gh release create "r${{ github.run_number }}" SMS-Link-r${{ github.run_number }}*.apk \
             --target "$GITHUB_SHA" --title "SMS Link r${{ github.run_number }}" \
-            --notes "$(git log -1 --format=%B | grep -v -E '^(Co-Authored-By|Claude-Session):')"
+            --notes "Normal and Debug builds. Debug logs verbosely and writes a log file on the phone."

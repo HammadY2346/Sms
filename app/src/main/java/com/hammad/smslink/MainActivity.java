@@ -51,6 +51,10 @@ public class MainActivity extends Activity {
 
         s.append("Both phones must share a network — easiest is to use the A71 as a hotspot and connect this phone to it.\n\n");
         s.append("When a text arrives, watch the LSPosed log (tag \"SMSLink\") to see whether inject succeeded.\n");
+        if (BuildConfig.DEBUG) {
+            s.append("\nThis is a DEBUG build: it also writes a log on this phone.\n");
+            s.append("Find it with root:  su -c 'find /data -name smslink.log'\n");
+        }
 
         t.setText(s);
 

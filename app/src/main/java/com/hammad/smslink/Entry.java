@@ -34,6 +34,7 @@ public final class Entry implements IXposedHookLoadPackage {
                 Lg.e("no Context in com.android.phone after 90s; listener not started", null);
                 return;
             }
+            Lg.setup(app);
             try {
                 Listener.start(app);
             } catch (Throwable t) {
