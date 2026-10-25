@@ -1,0 +1,30 @@
+name: build
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Build (debug-signed so it installs; signing doesn't matter for an Xposed module)
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK=$(find app/build/outputs/apk/debug -name "*.apk" | head -1)
+          cp "$APK" "SMS-Link-r${{ github.run_number }}.apk"
+          gh release create "r${{ github.run_number }}" "SMS-Link-r${{ github.run_number }}.apk" \
+            --target "$GITHUB_SHA" --title "SMS Link r${{ github.run_number }}" \
+            --notes "$(git log -1 --format=%B | grep -v -E '^(Co-Authored-By|Claude-Session):')"
